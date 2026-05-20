@@ -2,7 +2,7 @@
 
 ## Day 1 — 2026-05-20
 
-**Hours worked:** 4
+**Hours worked:** 2
 
 **What I did:**  
 - Setup Next.js project with TypeScript and Tailwind CSS  
