@@ -1,8 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import ToolCard from "./tool-card";
-import { AuditFormData, ToolInput } from "../../types/audit";
+
+import {
+  AuditFormData,
+  ToolInput,
+} from "../../types/audit";
+
+import AuditResults from "../result/audit-results";
+
+import {
+  generateAudit,
+  AuditResult,
+} from "../../lib/audit-engine";
 
 const initialTool: ToolInput = {
   id: 1,
@@ -20,10 +32,12 @@ const initialData: AuditFormData = {
 
 export default function AuditForm() {
 
+ // Here i update form state
   const [formData, setFormData] =
     useState<AuditFormData>(() => {
 
       if (typeof window !== "undefined") {
+
         const saved =
           localStorage.getItem("audit-form");
 
@@ -35,16 +49,23 @@ export default function AuditForm() {
       return initialData;
     });
 
-  // Save localStorage
+  
+  const [result, setResult] =
+    useState<AuditResult | null>(null);
+
+  
   useEffect(() => {
+
     localStorage.setItem(
       "audit-form",
       JSON.stringify(formData)
     );
+
   }, [formData]);
 
   // Add Tool
   const addTool = () => {
+
     const newTool: ToolInput = {
       id: Date.now(),
       tool: "",
@@ -61,6 +82,7 @@ export default function AuditForm() {
 
   // Remove Tool
   const removeTool = (id: number) => {
+
     setFormData({
       ...formData,
       tools: formData.tools.filter(
@@ -70,7 +92,10 @@ export default function AuditForm() {
   };
 
   // Update Tool
-  const updateTool = (updatedTool: ToolInput) => {
+  const updateTool = (
+    updatedTool: ToolInput
+  ) => {
+
     setFormData({
       ...formData,
       tools: formData.tools.map((tool) =>
@@ -81,24 +106,42 @@ export default function AuditForm() {
     });
   };
 
+  // Generate Audit
+  const handleGenerateAudit = () => {
+
+    const auditResult =
+      generateAudit(formData);
+
+    setResult(auditResult);
+  };
+
   return (
     <div className="space-y-8">
 
-      {/* Global Inputs */}
+      {/* Team Details */}
       <div className="bg-white rounded-2xl shadow-lg p-8 space-y-6 border border-gray-100">
 
-        <h2 className="text-3xl font-bold text-gray-900">
-          Team Audit Details
-        </h2>
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900">
+            Team Audit Details
+          </h2>
+
+          <p className="text-gray-600 mt-2">
+            Enter your AI stack information
+            to discover savings opportunities.
+          </p>
+        </div>
 
         {/* Team Size */}
         <div>
-          <label className="block mb-2 text-sm font-medium">
+
+          <label className="block mb-2 text-sm font-medium text-gray-700">
             Team Size
           </label>
 
           <input
             type="number"
+            min="1"
             value={formData.teamSize}
             onChange={(e) =>
               setFormData({
@@ -106,13 +149,14 @@ export default function AuditForm() {
                 teamSize: Number(e.target.value),
               })
             }
-            className="w-full border border-gray-300 rounded-lg p-3"
+            className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
         {/* Use Case */}
         <div>
-          <label className="block mb-2 text-sm font-medium">
+
+          <label className="block mb-2 text-sm font-medium text-gray-700">
             Primary Use Case
           </label>
 
@@ -124,8 +168,9 @@ export default function AuditForm() {
                 useCase: e.target.value,
               })
             }
-            className="w-full border border-gray-300 rounded-lg p-3"
+            className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
+
             <option value="">
               Select Use Case
             </option>
@@ -157,6 +202,7 @@ export default function AuditForm() {
       <div className="space-y-6">
 
         {formData.tools.map((tool) => (
+
           <ToolCard
             key={tool.id}
             toolData={tool}
@@ -174,10 +220,18 @@ export default function AuditForm() {
         + Add Another Tool
       </button>
 
-      {/* Generate Audit */}
-      <button className="w-full bg-indigo-600 text-white rounded-2xl p-4 text-lg font-semibold hover:bg-indigo-700 transition shadow-lg">
+      {/* Generate Audit Button */}
+      <button
+        onClick={handleGenerateAudit}
+        className="w-full bg-indigo-600 text-white rounded-2xl p-4 text-lg font-semibold hover:bg-indigo-700 transition shadow-lg hover:shadow-xl"
+      >
         Generate Audit
       </button>
+
+      {/* Results */}
+      {result && (
+        <AuditResults result={result} />
+      )}
     </div>
   );
 }
